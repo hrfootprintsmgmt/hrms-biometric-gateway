@@ -6,7 +6,7 @@ const ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 export default async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
-  const targetPath = url.pathname.replace(/^\/iclock/, "/functions/v1/iclock");
+  const targetPath = url.pathname.replace(/^\/api\/iclock/, "/functions/v1/iclock");
   const target = new URL(targetPath + url.search, `https://${PROJECT_REF}.supabase.co`);
 
   const headers = new Headers(req.headers);
