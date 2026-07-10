@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/iclock/:path*",
+      "destination": "/api/iclock/:path*"
+    },
+    {
+      "source": "/iclock",
+      "destination": "/api/iclock"
+    }
+  ]
+}
