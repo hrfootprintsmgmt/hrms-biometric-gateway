@@ -1,28 +1,47 @@
 export const config = { runtime: "edge" };
 
-const PROJECT_REF = process.env.SUPABASE_PROJECT_REF ?? "erjqikaafyefaujyzrax";
+const PROJECT_REF = process.env.SUPABASE_PROJECT_REF!;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 
 export default async function handler(req: Request): Promise<Response> {
-  const url = new URL(req.url);
+  if (!PROJECT_REF || !ANON_KEY) {
+    return new Response("Gateway configuration is missing", { status: 500 });
+  }
 
-  const targetPath = url.pathname.replace(/^\/api\/iclock/, "/functions/v1/iclock");
-  const target = new URL(targetPath + url.search, `https://${PROJECT_REF}.supabase.co`);
+  const incoming = new URL(req.url);
+
+  // Map /iclock/<anything> and /api/iclock/<anything>
+  // to /functions/v1/iclock/<anything>
+  const suffix = incoming.pathname.replace(/^\/(?:api\/)?iclock/, "");
+
+  const target = new URL(
+    `/functions/v1/iclock${suffix}${incoming.search}`,
+    `https://${PROJECT_REF}.supabase.co`
+  );
 
   const headers = new Headers(req.headers);
   headers.set("apikey", ANON_KEY);
+  headers.set("Authorization", `Bearer ${ANON_KEY}`);
   headers.delete("host");
+  headers.delete("content-length");
 
-  const init: RequestInit = {
+  const upstream = await fetch(target, {
     method: req.method,
     headers,
-    redirect: "follow"
-  };
+    body:
+      req.method === "GET" || req.method === "HEAD"
+        ? undefined
+        : req.body,
+    redirect: "manual",
+  });
 
-  if (["POST","PUT","PATCH"].includes(req.method)) {
-    init.body = req.body;
-    (init as any).duplex = "half";
-  }
+  const out = new Headers(upstream.headers);
+  out.set("Access-Control-Allow-Origin", "*");
+  out.set("Cache-Control", "no-store");
 
-  return fetch(target.toString(), init);
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: out,
+  });
 }

@@ -1,12 +1,7 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    {
-      "source": "/iclock/:path*",
-      "destination": "/api/iclock/:path*"
-    },
-    {
-      "source": "/iclock",
-      "destination": "/api/iclock"
-    }
+    { "source": "/iclock", "destination": "/api/iclock" },
+    { "source": "/iclock/:path*", "destination": "/api/iclock/:path*" }
   ]
 }
