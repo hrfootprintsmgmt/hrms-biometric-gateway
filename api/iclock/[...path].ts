@@ -1,9 +1,18 @@
+
 export const config = { runtime: "edge" };
 
 const PROJECT_REF = process.env.SUPABASE_PROJECT_REF!;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY!;
 
 export default async function handler(req: Request): Promise<Response> {
+
+console.log("=== ICLOCK REQUEST ===");
+  console.log({
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries()),
+  });
+
   if (!PROJECT_REF || !ANON_KEY) {
     return new Response("Gateway configuration is missing", { status: 500 });
   }
